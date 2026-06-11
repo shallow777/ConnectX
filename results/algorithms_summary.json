@@ -1,0 +1,102 @@
+[
+  {
+    "algorithm": "ppo",
+    "board": "6x7 connect-4",
+    "checkpoint": "runs/ppo/checkpoints/ppo_900000.zip",
+    "negamax_games": 30,
+    "negamax_wins": 20,
+    "negamax_losses": 7,
+    "negamax_draws": 3,
+    "negamax_win_rate": 0.6666666666666666,
+    "negamax_mean_reward": 0.43333333333333335,
+    "metric": "negamax_win_rate",
+    "metric_value": 0.6666666666666666
+  },
+  {
+    "algorithm": "dqn",
+    "board": "6x7 connect-4",
+    "checkpoint": "runs/dqn/dqn.pt",
+    "negamax_games": 30,
+    "negamax_wins": 18,
+    "negamax_losses": 4,
+    "negamax_draws": 8,
+    "negamax_win_rate": 0.6,
+    "negamax_mean_reward": 0.4666666666666667,
+    "metric": "negamax_win_rate",
+    "metric_value": 0.6
+  },
+  {
+    "algorithm": "alphazero_main",
+    "board": "6x7 connect-4",
+    "checkpoint": "runs/alphazero/checkpoints/alphazero_final.pt",
+    "negamax_games": 30,
+    "negamax_wins": 18,
+    "negamax_losses": 4,
+    "negamax_draws": 8,
+    "negamax_win_rate": 0.6,
+    "negamax_mean_reward": 0.4666666666666667,
+    "metric": "negamax_win_rate",
+    "metric_value": 0.6
+  },
+  {
+    "algorithm": "alphazero_best",
+    "board": "6x7 connect-4",
+    "checkpoint": "runs/alphazero_overnight/checkpoints/generation_0038_champion.pt",
+    "negamax_games": 30,
+    "negamax_wins": 27,
+    "negamax_losses": 2,
+    "negamax_draws": 1,
+    "negamax_win_rate": 0.9,
+    "negamax_mean_reward": 0.8333333333333334,
+    "metric": "negamax_win_rate",
+    "metric_value": 0.9
+  },
+  {
+    "algorithm": "q_learning",
+    "board": "4x5 connect-3",
+    "checkpoint": "runs/q_learning/q_learning.pkl",
+    "negamax_games": 30,
+    "negamax_wins": 30,
+    "negamax_losses": 0,
+    "negamax_draws": 0,
+    "negamax_win_rate": 1.0,
+    "negamax_mean_reward": 1.0,
+    "metric": "negamax_win_rate",
+    "metric_value": 1.0
+  },
+  {
+    "algorithm": "ppo",
+    "board": "6x7 connect-4",
+    "checkpoint": "runs/ppo/checkpoints/ppo_900000.zip",
+    "metric": "peak_negamax_win_rate",
+    "metric_value": 0.95
+  },
+  {
+    "algorithm": "alphazero_main",
+    "board": "6x7 connect-4",
+    "checkpoint": "runs/alphazero/checkpoints/alphazero_final.pt",
+    "metric": "peak_negamax_win_rate",
+    "metric_value": 0.75
+  },
+  {
+    "algorithm": "alphazero_overnight",
+    "board": "6x7 connect-4",
+    "checkpoint": "runs/alphazero_overnight/checkpoints/generation_0038_champion.pt",
+    "metric": "peak_negamax_win_rate",
+    "metric_value": 0.9333333333333332
+  },
+  {
+    "algorithm": "q_learning",
+    "board": "4x5 connect-3",
+    "checkpoint": "runs/q_learning/q_learning.pkl",
+    "metric": "final_q_table_states",
+    "metric_value": 29340.0
+  },
+  {
+    "algorithm": "dqn",
+    "board": "6x7 connect-4",
+    "checkpoint": "runs/dqn/dqn.pt",
+    "metric": "final_mean_loss",
+    "metric_value": 0.004874898978001
+  }
+]

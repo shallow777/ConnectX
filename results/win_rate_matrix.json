@@ -1,0 +1,17 @@
+{
+  "ppo": {
+    "ppo": null,
+    "alphazero": 0.0,
+    "dqn": 0.0
+  },
+  "alphazero": {
+    "ppo": 1.0,
+    "alphazero": null,
+    "dqn": 1.0
+  },
+  "dqn": {
+    "ppo": 1.0,
+    "alphazero": 0.0,
+    "dqn": null
+  }
+}

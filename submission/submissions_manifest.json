@@ -1,0 +1,18 @@
+{
+  "alphazero": {
+    "path": "results/submission_alphazero.py",
+    "source": "runs/alphazero_overnight/checkpoints/generation_0038_champion.pt"
+  },
+  "ppo": {
+    "path": "results/submission_ppo.py",
+    "source": "runs/ppo/checkpoints/ppo_900000.zip"
+  },
+  "dqn": {
+    "path": "results/submission_dqn.py",
+    "source": "runs/dqn/dqn.pt"
+  },
+  "q_learning": {
+    "path": "results/submission_q_learning.py",
+    "source": "runs/q_learning/q_learning.pkl"
+  }
+}

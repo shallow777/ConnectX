@@ -1,0 +1,27 @@
+{
+  "q_learning": {
+    "checkpoint": "runs/q_learning/q_learning.pkl",
+    "curve": "results/curves/q_learning_learning_curve.csv",
+    "board": "4x5 connect-3"
+  },
+  "dqn": {
+    "checkpoint": "runs/dqn/dqn.pt",
+    "curve": "results/curves/dqn_learning_curve.csv",
+    "board": "6x7 connect-4"
+  },
+  "ppo": {
+    "checkpoint": "runs/ppo/checkpoints/ppo_900000.zip",
+    "curve": "results/curves/ppo_negamax_curve.csv",
+    "board": "6x7 connect-4"
+  },
+  "alphazero_main": {
+    "checkpoint": "runs/alphazero/checkpoints/alphazero_final.pt",
+    "curve": "results/curves/alphazero_negamax_curve.csv",
+    "board": "6x7 connect-4"
+  },
+  "alphazero_overnight": {
+    "checkpoint": "runs/alphazero_overnight/checkpoints/generation_0038_champion.pt",
+    "curve": "results/curves/alphazero_overnight_negamax_curve.csv",
+    "board": "6x7 connect-4"
+  }
+}

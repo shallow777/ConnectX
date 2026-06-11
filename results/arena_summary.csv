@@ -1,0 +1,4 @@
+agent_a,agent_b,games,agent_a_win_rate,agent_b_win_rate,draw_rate,agent_a_wins,agent_b_wins,draws
+ppo,alphazero,100,0.0,1.0,0.0,0,100,0
+ppo,dqn,100,0.0,1.0,0.0,0,100,0
+alphazero,dqn,100,1.0,0.0,0.0,100,0,0

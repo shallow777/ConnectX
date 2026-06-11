@@ -1,0 +1,6 @@
+algorithm,board,checkpoint,negamax_games,negamax_wins,negamax_losses,negamax_draws,negamax_win_rate,negamax_mean_reward
+ppo,6x7 connect-4,runs/ppo/checkpoints/ppo_900000.zip,30,20,7,3,0.6666666666666666,0.43333333333333335
+dqn,6x7 connect-4,runs/dqn/dqn.pt,30,18,4,8,0.6,0.4666666666666667
+alphazero_main,6x7 connect-4,runs/alphazero/checkpoints/alphazero_final.pt,30,18,4,8,0.6,0.4666666666666667
+alphazero_best,6x7 connect-4,runs/alphazero_overnight/checkpoints/generation_0038_champion.pt,30,27,2,1,0.9,0.8333333333333334
+q_learning,4x5 connect-3,runs/q_learning/q_learning.pkl,30,30,0,0,1.0,1.0

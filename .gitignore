@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+
+# 测试与缓存 test & cache artifacts
+.pytest_cache/
+
+# 训练产物 training artifacts (太大，不进版本库 / too large for git)
+runs/
+logs/
+
+# 系统文件
+.DS_Store
