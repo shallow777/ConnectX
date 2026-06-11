@@ -87,10 +87,7 @@ python -m connectx.submission.make_all_submissions --output-dir submission --val
 ## 还需完成 ⬜
 
 - [ ] **上传 Kaggle**：把 `submission/submission.py` 提交到 Kaggle ConnectX 比赛，记录线上分数与排名，目前（alpha-zero:700分)
-- [ ] **报告/展示**：算法对比分析写成报告——为什么 AlphaZero 最强；PPO 对 negamax 不错
-  ```
-  （峰值 0.95）但 arena 被 AlphaZero/DQN 压制，值得分析；表格 Q-learning 在标准棋盘的局限性
-  ```
+- [ ] **报告/展示**：算法对比分析写成报告——为什么 AlphaZero 最强；
 - [ ] **奖励设计实验**（作业建议项）：目前只有终局 ±1 奖励，可尝试 reward shaping（我正在做）
   ```
   （如按连子数 / 威胁数给中间奖励）并对比效果

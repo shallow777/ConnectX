@@ -70,7 +70,6 @@ class TabularQAgent:
             next_state = canonical_state(next_board_state, next_mark)
             next_mask = valid_action_mask(next_board_state, self.config.rows, self.config.columns).astype(bool)
             opponent_best = float(self.values(next_state)[next_mask].max()) if next_mask.any() else 0.0
-            # 注意是减号: 零和博弈中对手的最优值取负 (zero-sum, negamax backup)
             target = reward - self.gamma * opponent_best
         q_values[action] += self.alpha * (float(target) - float(q_values[action]))
 
