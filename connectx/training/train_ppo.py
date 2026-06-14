@@ -1,17 +1,3 @@
-"""MaskablePPO self-play 训练入口 (training entry point).
-
-用 sb3-contrib 的 MaskablePPO 在 SelfPlayConnectXEnv 上做联盟式自我对弈
-(league-style self-play):
-- 学习方控制一方棋子, 对手从 OpponentPool 中随机采样;
-- 每存一个 checkpoint, 可以用 --add-checkpoints-to-pool 把它冻结后加入对手池,
-  这样后续训练要同时打赢历史版本, 避免遗忘 (avoid catastrophic forgetting);
-- 每个 checkpoint 都会对战 Kaggle negamax, 学习曲线写到 negamax_curve.csv.
-
-用法示例 (usage):
-    python -m connectx.training.train_ppo --run-dir runs/ppo \
-        --total-timesteps 500000 --checkpoint-freq 50000 --add-checkpoints-to-pool
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -21,22 +7,26 @@ from typing import Any
 
 from connectx.agents.lookahead import wrap_with_tactical_safety
 from connectx.agents.ppo_selfplay import OpponentPool, SelfPlayConnectXEnv, make_sb3_ppo_agent
+from connectx.agents.reward_shaping import RewardShapingConfig
+from connectx.agents.reward_shaping import RewardShapingConfig
 from connectx.evaluation.kaggle_eval import evaluate_against_negamax
+from connectx.training.run_manifest import reward_shaping_fields, write_run_manifest
 
 
 def build_env(opponent_pool: OpponentPool, args: argparse.Namespace) -> SelfPlayConnectXEnv:
+    shaping = RewardShapingConfig() if args.reward_shaping else None
     return SelfPlayConnectXEnv(
         opponent_pool=opponent_pool,
         rows=args.rows,
         columns=args.columns,
         inarow=args.inarow,
-        randomize_player=True,   # 随机先后手, 让策略两边都会下
-        tactical_safety=True,    # 训练时也套战术安全层, 减少低级失误样本
+        randomize_player=True,
+        tactical_safety=True,
+        reward_shaping=shaping,
     )
 
 
 def append_curve_row(path: Path, row: dict[str, Any]) -> None:
-    """向学习曲线 CSV 追加一行; 文件不存在时先写表头."""
     path.parent.mkdir(parents=True, exist_ok=True)
     exists = path.exists()
     with path.open("a", newline="") as f:
@@ -47,7 +37,6 @@ def append_curve_row(path: Path, row: dict[str, Any]) -> None:
 
 
 def train(args: argparse.Namespace) -> None:
-    # sb3 相关依赖只在训练时需要, 故延迟导入 (lazy import)
     try:
         from sb3_contrib import MaskablePPO
         from sb3_contrib.common.maskable.callbacks import MaskableEvalCallback
@@ -59,6 +48,12 @@ def train(args: argparse.Namespace) -> None:
     checkpoint_dir = run_dir / "checkpoints"
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
     curve_path = run_dir / "negamax_curve.csv"
+    write_run_manifest(
+        run_dir,
+        algorithm="ppo",
+        total_timesteps=args.total_timesteps,
+        **reward_shaping_fields(args.reward_shaping),
+    )
 
     opponent_pool = OpponentPool()
     env = Monitor(build_env(opponent_pool, args))
@@ -68,7 +63,7 @@ def train(args: argparse.Namespace) -> None:
         model = MaskablePPO.load(args.resume, env=env)
     else:
         model = MaskablePPO(
-            "MultiInputPolicy",  # 观测是 dict(observation + action_mask)
+            "MultiInputPolicy",
             env,
             learning_rate=args.learning_rate,
             n_steps=args.n_steps,
@@ -89,8 +84,6 @@ def train(args: argparse.Namespace) -> None:
         render=False,
     )
 
-    # 断点续训: 从 checkpoint 文件名 (ppo_<timesteps>.zip) 恢复已训练步数,
-    # 并把更早的 checkpoint 重新加入对手池
     trained = 0
     if args.resume:
         resume_path = Path(args.resume)
@@ -101,7 +94,6 @@ def train(args: argparse.Namespace) -> None:
                 if int(checkpoint_path.stem.split("_", 1)[1]) <= trained:
                     opponent_pool.add_sb3_model(checkpoint_path)
 
-    # 分块训练: 每 checkpoint_freq 步存一次档 + 评估一次 negamax
     while trained < args.total_timesteps:
         chunk = min(args.checkpoint_freq, args.total_timesteps - trained)
         model.learn(total_timesteps=chunk, reset_num_timesteps=trained == 0 and not args.resume, callback=eval_callback)
@@ -112,7 +104,6 @@ def train(args: argparse.Namespace) -> None:
         if args.add_checkpoints_to_pool:
             opponent_pool.add_sb3_model(checkpoint_path)
 
-        # 外部评估: 套上战术安全层后对战 Kaggle negamax
         agent = wrap_with_tactical_safety(make_sb3_ppo_agent(checkpoint_path))
         result = evaluate_against_negamax(
             agent,
@@ -136,11 +127,19 @@ def train(args: argparse.Namespace) -> None:
             },
         )
 
+    write_run_manifest(
+        run_dir,
+        algorithm="ppo",
+        total_timesteps=trained,
+        status="completed",
+        **reward_shaping_fields(args.reward_shaping),
+    )
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train MaskablePPO self-play ConnectX agent.")
     parser.add_argument("--run-dir", default="runs/ppo")
-    parser.add_argument("--resume", default=None, help="从已有 ppo_<steps>.zip 续训")
+    parser.add_argument("--resume", default=None)
     parser.add_argument("--rows", type=int, default=6)
     parser.add_argument("--columns", type=int, default=7)
     parser.add_argument("--inarow", type=int, default=4)
@@ -149,16 +148,33 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--eval-freq", type=int, default=10_000)
     parser.add_argument("--negamax-games", type=int, default=20)
     parser.add_argument("--kaggle-timeout", type=float, default=2.0)
-    # PPO 超参数 (hyperparameters)
     parser.add_argument("--learning-rate", type=float, default=3e-4)
     parser.add_argument("--n-steps", type=int, default=2048)
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--gamma", type=float, default=0.99)
     parser.add_argument("--gae-lambda", type=float, default=0.95)
     parser.add_argument("--ent-coef", type=float, default=0.01)
-    parser.add_argument("--add-checkpoints-to-pool", action="store_true", help="把历史 checkpoint 加入对手池")
+    parser.add_argument("--add-checkpoints-to-pool", action="store_true")
+    parser.add_argument("--reward-shaping", action="store_true", help="Enable heuristic intermediate rewards.")
+    parser.add_argument(
+        "--smoke",
+        action="store_true",
+        help="Minimal end-to-end run: small timesteps, checkpoint, negamax eval, tensorboard.",
+    )
     return parser.parse_args()
 
 
+def apply_smoke_defaults(args: argparse.Namespace) -> None:
+    if not args.smoke:
+        return
+    args.total_timesteps = min(args.total_timesteps, 2048)
+    args.checkpoint_freq = min(args.checkpoint_freq, 2048)
+    args.eval_freq = min(args.eval_freq, 1024)
+    args.negamax_games = min(args.negamax_games, 4)
+    args.run_dir = str(Path(args.run_dir) / "smoke")
+
+
 if __name__ == "__main__":
-    train(parse_args())
+    parsed = parse_args()
+    apply_smoke_defaults(parsed)
+    train(parsed)

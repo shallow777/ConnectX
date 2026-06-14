@@ -1,18 +1,50 @@
 {
-  "alphazero": {
-    "path": "results/submission_alphazero.py",
-    "source": "runs/alphazero_overnight/checkpoints/generation_0038_champion.pt"
+  "latest_tag": "push",
+  "latest_export": "2026-06-12T07:34:33Z",
+  "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+  "overwrite_algo_files": false,
+  "set_default": false,
+  "algorithms": {
+    "alphazero": {
+      "kind": "alphazero",
+      "tag": "push",
+      "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+      "exported_at": "2026-06-12T07:34:33Z",
+      "path": "versions/submission_alphazero_push_20260612T073433Z.py",
+      "canonical_path": "submission_alphazero.py",
+      "source": "runs/alphazero_push/checkpoints/generation_0008_accepted.pt",
+      "board": "6x7 connect-4"
+    },
+    "ppo": {
+      "kind": "ppo",
+      "tag": "push",
+      "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+      "exported_at": "2026-06-12T07:34:33Z",
+      "path": "versions/submission_ppo_push_20260612T073433Z.py",
+      "canonical_path": "submission_ppo.py",
+      "source": "runs/ppo/checkpoints/ppo_900000.zip",
+      "board": "6x7 connect-4"
+    },
+    "dqn": {
+      "kind": "dqn",
+      "tag": "push",
+      "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+      "exported_at": "2026-06-12T07:34:33Z",
+      "path": "versions/submission_dqn_push_20260612T073433Z.py",
+      "canonical_path": "submission_dqn.py",
+      "source": "runs/dqn/dqn.pt",
+      "board": "6x7 connect-4"
+    },
+    "q_learning": {
+      "kind": "q_learning",
+      "tag": "push",
+      "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+      "exported_at": "2026-06-12T07:34:33Z",
+      "path": "versions/submission_q_learning_push_20260612T073433Z.py",
+      "canonical_path": "submission_q_learning.py",
+      "source": "runs/q_learning/q_learning.pkl",
+      "board": "4x5 connect-3"
+    }
   },
-  "ppo": {
-    "path": "results/submission_ppo.py",
-    "source": "runs/ppo/checkpoints/ppo_900000.zip"
-  },
-  "dqn": {
-    "path": "results/submission_dqn.py",
-    "source": "runs/dqn/dqn.pt"
-  },
-  "q_learning": {
-    "path": "results/submission_q_learning.py",
-    "source": "runs/q_learning/q_learning.pkl"
-  }
+  "versions_dir": "versions"
 }

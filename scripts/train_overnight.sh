@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
-# 过夜强化训练 (overnight optimization): 在主流水线之后追加算力。
-# Phase 1: PPO 续训到 150 万步; Phase 2: 更强设置的 AlphaZero (单独 run 目录,
-# 从主训练最优 checkpoint 热启动); Phase 3: 重新汇总结果并生成 submission。
-# 在仓库根目录运行: bash scripts/train_overnight.sh
+# Overnight optimization: runs automatically after the main pipeline.
+# Uses stronger AlphaZero settings + extended PPO self-play, then re-finalizes.
 set -euo pipefail
 
-PY=${PY:-python}
-cd "$(dirname "$0")/.."
+PY=/root/miniconda3/envs/ConnectX/bin/python
+WD=/root/autodl-tmp/ConnectX_new
+cd "$WD"
 export PYTHONPATH=.
 export PYTHONUNBUFFERED=1
 
@@ -22,7 +21,6 @@ run_stage() {
   log "DONE $name"
 }
 
-# 取主训练里最新被接受的 candidate 作为热启动种子 (warm-start seed)
 best_az_seed() {
   if compgen -G "runs/alphazero/checkpoints/generation_*_accepted.pt" > /dev/null; then
     ls -1 runs/alphazero/checkpoints/generation_*_accepted.pt | sort -V | tail -1
@@ -35,7 +33,7 @@ best_az_seed() {
 
 log "=== OVERNIGHT OPTIMIZATION START ==="
 
-# --- Phase 1: PPO 续训 (+1M steps, 对手池更深) ---
+# --- Phase 1: Extended PPO (+1M steps, deeper opponent pool) ---
 PPO_TARGET=1500000
 PPO_LATEST=$(ls -1 runs/ppo/checkpoints/ppo_*.zip 2>/dev/null | sort -V | tail -1 || true)
 if [[ -n "$PPO_LATEST" ]]; then
@@ -56,7 +54,7 @@ else
   log "SKIP ppo_overnight (no checkpoint)"
 fi
 
-# --- Phase 2: 更强 AlphaZero (更多 generation / simulation, 阈值略放宽) ---
+# --- Phase 2: Stronger AlphaZero (new run dir, warm-start from best champion) ---
 AZ_SEED=$(best_az_seed)
 if [[ -n "$AZ_SEED" ]]; then
   AZ_ARGS=(
@@ -74,7 +72,6 @@ if [[ -n "$AZ_SEED" ]]; then
     --accept-threshold 0.52
     --negamax-games 30
   )
-  # 把主训练的 replay buffer 复制过来继续用, 减少冷启动样本浪费
   if [[ -f runs/alphazero/replay_buffer.npz ]]; then
     mkdir -p runs/alphazero_overnight
     cp -f runs/alphazero/replay_buffer.npz runs/alphazero_overnight/replay_buffer.npz
@@ -83,22 +80,17 @@ if [[ -n "$AZ_SEED" ]]; then
   if [[ -f runs/alphazero_overnight/checkpoints/alphazero_final.pt ]] \
      && [[ $(wc -l < runs/alphazero_overnight/negamax_curve.csv 2>/dev/null || echo 0) -ge 61 ]]; then
     log "SKIP alphazero_overnight (already complete)"
+  elif [[ -f runs/alphazero_overnight/checkpoints/alphazero_final.pt ]]; then
+    AZ_ARGS=(--run-dir runs/alphazero_overnight --device cuda --resume-checkpoint runs/alphazero_overnight/checkpoints/alphazero_final.pt --resume-buffer --generations 60 --selfplay-games 60 --workers 2 --mcts-simulations 150 --eval-mcts-simulations 120 --train-steps 500 --batch-size 256 --arena-games 60 --accept-threshold 0.52 --negamax-games 30)
+    run_stage alphazero_overnight "$PY" -m connectx.training.train_alphazero "${AZ_ARGS[@]}"
   else
-    # 已有 final checkpoint 时改为从它续训
-    if [[ -f runs/alphazero_overnight/checkpoints/alphazero_final.pt ]]; then
-      AZ_ARGS=(--run-dir runs/alphazero_overnight --device cuda
-        --resume-checkpoint runs/alphazero_overnight/checkpoints/alphazero_final.pt --resume-buffer
-        --generations 60 --selfplay-games 60 --workers 2
-        --mcts-simulations 150 --eval-mcts-simulations 120 --train-steps 500 --batch-size 256
-        --arena-games 60 --accept-threshold 0.52 --negamax-games 30)
-    fi
     run_stage alphazero_overnight "$PY" -m connectx.training.train_alphazero "${AZ_ARGS[@]}"
   fi
 else
   log "SKIP alphazero_overnight (no seed checkpoint)"
 fi
 
-# --- Phase 3: 用所有 run 里的最优 checkpoint 重新汇总 + 生成 submission ---
+# --- Phase 3: Re-finalize with best checkpoints across all runs ---
 run_stage finalize_overnight "$PY" -m connectx.training.finalize_results \
   --results-dir results \
   --arena-games 200 \

@@ -63,7 +63,6 @@ def evaluate_against_negamax(
         configuration=config,
         num_episodes=games,
     )
-    # rewards 每项是 [我方, negamax] 的对局结果; 我方排第一位, 故取 pair[0]
     first_player_rewards = [float(pair[0]) for pair in rewards]
     wins = sum(reward > 0 for reward in first_player_rewards)
     losses = sum(reward < 0 for reward in first_player_rewards)

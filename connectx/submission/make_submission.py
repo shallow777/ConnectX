@@ -29,6 +29,34 @@ def _npz_b64(arrays: dict[str, np.ndarray]) -> str:
     return base64.b64encode(buffer.getvalue()).decode("ascii")
 
 
+def _extract_template_body(template_path: Path) -> list[str]:
+    """抽取一个已生成 submission 模板里"非权重"的代码主体 (import + 推理逻辑),
+    供 hybrid / solver 提交脚本复用; 跳过注释行和 WEIGHTS_B64 大块权重。"""
+    lines = template_path.read_text(encoding="utf-8").splitlines()
+    preamble: list[str] = []
+    body: list[str] = []
+    seen_weights = False
+    for line in lines:
+        if line.startswith("#"):
+            continue
+        if line.startswith("WEIGHTS_B64"):
+            seen_weights = True
+            continue
+        if not seen_weights:
+            if line.startswith("import ") or line == "":
+                preamble.append(line)
+            continue
+        if line == "" and not body:
+            continue
+        body.append(line)
+    combined = preamble + body
+    while combined and combined[0] == "":
+        combined.pop(0)
+    if not combined:
+        raise ValueError(f"Could not parse submission template: {template_path}")
+    return combined
+
+
 def export_alphazero_checkpoint(checkpoint_path: str | Path) -> tuple[str, dict[str, Any]]:
     import torch
 

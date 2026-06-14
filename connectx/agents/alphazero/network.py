@@ -1,12 +1,3 @@
-"""AlphaZero 策略-价值网络 (policy-value network) 与损失函数.
-
-结构与 AlphaZero 论文一致 (按 ConnectX 规模缩小): 卷积 stem + 若干残差块,
-然后分出两个 head:
-- policy head: 输出每列的落子 logits;
-- value head:  输出当前局面的胜率估计, tanh 压到 [-1, 1]。
-损失 = policy 交叉熵 + value MSE + L2 正则。
-"""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -29,8 +20,6 @@ class NetworkConfig:
 
 
 class ResidualBlock(nn.Module):
-    """标准残差块: conv-bn-relu-conv-bn + skip connection."""
-
     def __init__(self, channels: int) -> None:
         super().__init__()
         self.conv1 = nn.Conv2d(channels, channels, kernel_size=3, padding=1, bias=False)
@@ -46,8 +35,6 @@ class ResidualBlock(nn.Module):
 
 
 class AlphaZeroNet(nn.Module):
-    """残差策略-价值网络; forward 返回 (policy logits, value)."""
-
     def __init__(
         self,
         rows: int = 6,
@@ -104,7 +91,6 @@ class AlphaZeroNet(nn.Module):
 
 
 def masked_policy_loss(logits: torch.Tensor, target_policy: torch.Tensor, action_mask: torch.Tensor) -> torch.Tensor:
-    """交叉熵 loss, target 是 MCTS 访问次数归一化后的分布; 非法列掩掉再 softmax."""
     masked_logits = logits.masked_fill(~action_mask.bool(), -1e9)
     log_probs = F.log_softmax(masked_logits, dim=-1)
     return -(target_policy * log_probs).sum(dim=-1).mean()
@@ -119,7 +105,6 @@ def alphazero_loss(
     model: nn.Module,
     l2_weight: float,
 ) -> tuple[torch.Tensor, dict[str, float]]:
-    """总损失 = policy CE + value MSE + l2_weight * ||theta||^2 (论文公式)."""
     policy_loss = masked_policy_loss(logits, target_policy, action_mask)
     value_loss = F.mse_loss(values, target_value)
     l2_loss = torch.zeros((), device=values.device)
@@ -134,6 +119,15 @@ def alphazero_loss(
     }
 
 
+def _masked_softmax_policy(logits_np: np.ndarray, mask: np.ndarray) -> np.ndarray:
+    logits_row = logits_np.copy()
+    logits_row[~mask] = -1e9
+    logits_row = logits_row - np.max(logits_row[mask])
+    exp_logits = np.zeros_like(logits_row, dtype=np.float64)
+    exp_logits[mask] = np.exp(logits_row[mask])
+    return (exp_logits / exp_logits.sum()).astype(np.float32)
+
+
 @torch.no_grad()
 def predict_policy_value(
     model: AlphaZeroNet,
@@ -141,18 +135,31 @@ def predict_policy_value(
     action_mask: np.ndarray,
     device: str | torch.device = "cpu",
 ) -> tuple[np.ndarray, float]:
-    """单局面推理: 返回 (掩码后归一化的 policy 分布, value 标量), 供 MCTS 调用."""
     model.eval()
     tensor = torch.as_tensor(encoded_state, dtype=torch.float32, device=device).unsqueeze(0)
     logits, value = model(tensor)
     logits_np = logits.squeeze(0).detach().cpu().numpy()
     mask = np.asarray(action_mask, dtype=bool)
-    logits_np[~mask] = -1e9
-    logits_np = logits_np - np.max(logits_np[mask])
-    exp_logits = np.zeros_like(logits_np, dtype=np.float64)
-    exp_logits[mask] = np.exp(logits_np[mask])
-    policy = exp_logits / exp_logits.sum()
-    return policy.astype(np.float32), float(value.item())
+    policy = _masked_softmax_policy(logits_np, mask)
+    return policy, float(value.item())
+
+
+@torch.no_grad()
+def predict_policy_value_batch(
+    model: AlphaZeroNet,
+    encoded_states: np.ndarray,
+    action_masks: np.ndarray,
+    device: str | torch.device = "cpu",
+) -> tuple[np.ndarray, np.ndarray]:
+    model.eval()
+    tensor = torch.as_tensor(encoded_states, dtype=torch.float32, device=device)
+    mask_t = torch.as_tensor(action_masks, dtype=torch.bool, device=device)
+    logits, values = model(tensor)
+    logits = logits.masked_fill(~mask_t, -1e9)
+    logits = logits - logits.amax(dim=1, keepdim=True)
+    policies = torch.softmax(logits, dim=-1).detach().cpu().numpy().astype(np.float32)
+    values_np = values.reshape(-1).detach().cpu().numpy().astype(np.float32)
+    return policies, values_np
 
 
 def save_checkpoint(

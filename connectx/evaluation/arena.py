@@ -189,7 +189,6 @@ def evaluate_pair(
 
     stats = MatchupStats(agent_a.name, agent_b.name)
     for game_idx in range(games):
-        # 轮流执先手, 消除 ConnectX 先手优势对胜率统计的影响
         if game_idx % 2 == 0:
             first, second = agent_a, agent_b
         else:

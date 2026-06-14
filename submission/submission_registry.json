@@ -1,0 +1,532 @@
+[
+  {
+    "kind": "alphazero",
+    "tag": "overnight_gen38",
+    "notes": "Best overnight negamax ~90%; MCTS budget 88%; multi-threat tactical",
+    "exported_at": "2026-06-11T05:04:01Z",
+    "path": "versions/submission_alphazero_overnight_gen38_20260611T050401Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_overnight/checkpoints/generation_0038_champion.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "ppo",
+    "tag": "overnight_gen38",
+    "notes": "Best overnight negamax ~90%; MCTS budget 88%; multi-threat tactical",
+    "exported_at": "2026-06-11T05:04:01Z",
+    "path": "versions/submission_ppo_overnight_gen38_20260611T050401Z.py",
+    "canonical_path": "submission_ppo.py",
+    "source": "runs/ppo/checkpoints/ppo_900000.zip",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "dqn",
+    "tag": "overnight_gen38",
+    "notes": "Best overnight negamax ~90%; MCTS budget 88%; multi-threat tactical",
+    "exported_at": "2026-06-11T05:04:01Z",
+    "path": "versions/submission_dqn_overnight_gen38_20260611T050401Z.py",
+    "canonical_path": "submission_dqn.py",
+    "source": "runs/dqn/dqn.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "q_learning",
+    "tag": "overnight_gen38",
+    "notes": "Best overnight negamax ~90%; MCTS budget 88%; multi-threat tactical",
+    "exported_at": "2026-06-11T05:04:01Z",
+    "path": "versions/submission_q_learning_overnight_gen38_20260611T050401Z.py",
+    "canonical_path": "submission_q_learning.py",
+    "source": "runs/q_learning/q_learning.pkl",
+    "board": "4x5 connect-3"
+  },
+  {
+    "kind": "alphazero",
+    "tag": "push_gen1_925",
+    "notes": "Push gen1 accepted; negamax 92.5% (37/40)",
+    "exported_at": "2026-06-11T06:22:57Z",
+    "path": "versions/submission_alphazero_push_gen1_925_20260611T062257Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_push/checkpoints/generation_0001_accepted.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "ppo",
+    "tag": "push_gen1_925",
+    "notes": "Push gen1 accepted; negamax 92.5% (37/40)",
+    "exported_at": "2026-06-11T06:22:57Z",
+    "path": "versions/submission_ppo_push_gen1_925_20260611T062257Z.py",
+    "canonical_path": "submission_ppo.py",
+    "source": "runs/ppo/checkpoints/ppo_900000.zip",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "dqn",
+    "tag": "push_gen1_925",
+    "notes": "Push gen1 accepted; negamax 92.5% (37/40)",
+    "exported_at": "2026-06-11T06:22:57Z",
+    "path": "versions/submission_dqn_push_gen1_925_20260611T062257Z.py",
+    "canonical_path": "submission_dqn.py",
+    "source": "runs/dqn/dqn.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "q_learning",
+    "tag": "push_gen1_925",
+    "notes": "Push gen1 accepted; negamax 92.5% (37/40)",
+    "exported_at": "2026-06-11T06:22:57Z",
+    "path": "versions/submission_q_learning_push_gen1_925_20260611T062257Z.py",
+    "canonical_path": "submission_q_learning.py",
+    "source": "runs/q_learning/q_learning.pkl",
+    "board": "4x5 connect-3"
+  },
+  {
+    "kind": "alphazero",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-11T14:30:03Z",
+    "path": "versions/submission_alphazero_push_20260611T143003Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_push/checkpoints/generation_0043_champion.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "ppo",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-11T14:30:03Z",
+    "path": "versions/submission_ppo_push_20260611T143003Z.py",
+    "canonical_path": "submission_ppo.py",
+    "source": "runs/ppo/checkpoints/ppo_900000.zip",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "dqn",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-11T14:30:03Z",
+    "path": "versions/submission_dqn_push_20260611T143003Z.py",
+    "canonical_path": "submission_dqn.py",
+    "source": "runs/dqn/dqn.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "q_learning",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-11T14:30:03Z",
+    "path": "versions/submission_q_learning_push_20260611T143003Z.py",
+    "canonical_path": "submission_q_learning.py",
+    "source": "runs/q_learning/q_learning.pkl",
+    "board": "4x5 connect-3"
+  },
+  {
+    "kind": "alphazero",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-11T16:45:45Z",
+    "path": "versions/submission_alphazero_push_20260611T164545Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_push/checkpoints/generation_0004_champion.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "ppo",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-11T16:45:45Z",
+    "path": "versions/submission_ppo_push_20260611T164545Z.py",
+    "canonical_path": "submission_ppo.py",
+    "source": "runs/ppo/checkpoints/ppo_900000.zip",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "alphazero",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-11T18:49:05Z",
+    "path": "versions/submission_alphazero_push_20260611T184905Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_push/checkpoints/generation_0004_champion.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "ppo",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-11T18:49:05Z",
+    "path": "versions/submission_ppo_push_20260611T184905Z.py",
+    "canonical_path": "submission_ppo.py",
+    "source": "runs/ppo/checkpoints/ppo_900000.zip",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "dqn",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-11T18:49:05Z",
+    "path": "versions/submission_dqn_push_20260611T184905Z.py",
+    "canonical_path": "submission_dqn.py",
+    "source": "runs/dqn/dqn.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "q_learning",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-11T18:49:05Z",
+    "path": "versions/submission_q_learning_push_20260611T184905Z.py",
+    "canonical_path": "submission_q_learning.py",
+    "source": "runs/q_learning/q_learning.pkl",
+    "board": "4x5 connect-3"
+  },
+  {
+    "kind": "alphazero",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-11T21:39:18Z",
+    "path": "versions/submission_alphazero_push_20260611T213918Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_push/checkpoints/generation_0008_accepted.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "alphazero",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-11T23:48:46Z",
+    "path": "versions/submission_alphazero_push_20260611T234846Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_push/checkpoints/generation_0008_accepted.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "ppo",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-11T23:48:46Z",
+    "path": "versions/submission_ppo_push_20260611T234846Z.py",
+    "canonical_path": "submission_ppo.py",
+    "source": "runs/ppo/checkpoints/ppo_900000.zip",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "dqn",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-11T23:48:46Z",
+    "path": "versions/submission_dqn_push_20260611T234846Z.py",
+    "canonical_path": "submission_dqn.py",
+    "source": "runs/dqn/dqn.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "q_learning",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-11T23:48:46Z",
+    "path": "versions/submission_q_learning_push_20260611T234846Z.py",
+    "canonical_path": "submission_q_learning.py",
+    "source": "runs/q_learning/q_learning.pkl",
+    "board": "4x5 connect-3"
+  },
+  {
+    "kind": "alphazero",
+    "tag": "push_v2_optimized",
+    "notes": "MCTS tree reuse + full time budget/overage + center opening book; negamax 100% checkpoint",
+    "exported_at": "2026-06-12T01:51:52Z",
+    "path": "versions/submission_alphazero_push_v2_optimized_20260612T015152Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_push/checkpoints/generation_0008_accepted.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "ppo",
+    "tag": "push_v2_optimized",
+    "notes": "MCTS tree reuse + full time budget/overage + center opening book; negamax 100% checkpoint",
+    "exported_at": "2026-06-12T01:51:52Z",
+    "path": "versions/submission_ppo_push_v2_optimized_20260612T015152Z.py",
+    "canonical_path": "submission_ppo.py",
+    "source": "runs/ppo/checkpoints/ppo_900000.zip",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "dqn",
+    "tag": "push_v2_optimized",
+    "notes": "MCTS tree reuse + full time budget/overage + center opening book; negamax 100% checkpoint",
+    "exported_at": "2026-06-12T01:51:52Z",
+    "path": "versions/submission_dqn_push_v2_optimized_20260612T015152Z.py",
+    "canonical_path": "submission_dqn.py",
+    "source": "runs/dqn/dqn.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "q_learning",
+    "tag": "push_v2_optimized",
+    "notes": "MCTS tree reuse + full time budget/overage + center opening book; negamax 100% checkpoint",
+    "exported_at": "2026-06-12T01:51:52Z",
+    "path": "versions/submission_q_learning_push_v2_optimized_20260612T015152Z.py",
+    "canonical_path": "submission_q_learning.py",
+    "source": "runs/q_learning/q_learning.pkl",
+    "board": "4x5 connect-3"
+  },
+  {
+    "kind": "alphazero",
+    "tag": "push_v3_fast",
+    "notes": "BN fold + eval cache/mirror + leaf batch + MCTS solver + 2-step tactical + dynamic time",
+    "exported_at": "2026-06-12T01:57:11Z",
+    "path": "versions/submission_alphazero_push_v3_fast_20260612T015711Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_push/checkpoints/generation_0008_accepted.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "ppo",
+    "tag": "push_v3_fast",
+    "notes": "BN fold + eval cache/mirror + leaf batch + MCTS solver + 2-step tactical + dynamic time",
+    "exported_at": "2026-06-12T01:57:11Z",
+    "path": "versions/submission_ppo_push_v3_fast_20260612T015711Z.py",
+    "canonical_path": "submission_ppo.py",
+    "source": "runs/ppo/checkpoints/ppo_900000.zip",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "dqn",
+    "tag": "push_v3_fast",
+    "notes": "BN fold + eval cache/mirror + leaf batch + MCTS solver + 2-step tactical + dynamic time",
+    "exported_at": "2026-06-12T01:57:11Z",
+    "path": "versions/submission_dqn_push_v3_fast_20260612T015711Z.py",
+    "canonical_path": "submission_dqn.py",
+    "source": "runs/dqn/dqn.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "q_learning",
+    "tag": "push_v3_fast",
+    "notes": "BN fold + eval cache/mirror + leaf batch + MCTS solver + 2-step tactical + dynamic time",
+    "exported_at": "2026-06-12T01:57:11Z",
+    "path": "versions/submission_q_learning_push_v3_fast_20260612T015711Z.py",
+    "canonical_path": "submission_q_learning.py",
+    "source": "runs/q_learning/q_learning.pkl",
+    "board": "4x5 connect-3"
+  },
+  {
+    "kind": "alphazero",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-12T02:00:14Z",
+    "path": "versions/submission_alphazero_push_20260612T020014Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_push/checkpoints/generation_0008_accepted.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "ppo",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-12T02:00:14Z",
+    "path": "versions/submission_ppo_push_20260612T020014Z.py",
+    "canonical_path": "submission_ppo.py",
+    "source": "runs/ppo/checkpoints/ppo_900000.zip",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "dqn",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-12T02:00:14Z",
+    "path": "versions/submission_dqn_push_20260612T020014Z.py",
+    "canonical_path": "submission_dqn.py",
+    "source": "runs/dqn/dqn.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "q_learning",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-12T02:00:14Z",
+    "path": "versions/submission_q_learning_push_20260612T020014Z.py",
+    "canonical_path": "submission_q_learning.py",
+    "source": "runs/q_learning/q_learning.pkl",
+    "board": "4x5 connect-3"
+  },
+  {
+    "kind": "alphazero",
+    "tag": "push_v3_fix",
+    "notes": "Fix BN fold conv2 padding + MCTS solver/spin bugs",
+    "exported_at": "2026-06-12T02:40:04Z",
+    "path": "versions/submission_alphazero_push_v3_fix_20260612T024004Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_push/checkpoints/generation_0008_accepted.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "ppo",
+    "tag": "push_v3_fix",
+    "notes": "Fix BN fold conv2 padding + MCTS solver/spin bugs",
+    "exported_at": "2026-06-12T02:40:04Z",
+    "path": "versions/submission_ppo_push_v3_fix_20260612T024004Z.py",
+    "canonical_path": "submission_ppo.py",
+    "source": "runs/ppo/checkpoints/ppo_900000.zip",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "dqn",
+    "tag": "push_v3_fix",
+    "notes": "Fix BN fold conv2 padding + MCTS solver/spin bugs",
+    "exported_at": "2026-06-12T02:40:04Z",
+    "path": "versions/submission_dqn_push_v3_fix_20260612T024004Z.py",
+    "canonical_path": "submission_dqn.py",
+    "source": "runs/dqn/dqn.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "q_learning",
+    "tag": "push_v3_fix",
+    "notes": "Fix BN fold conv2 padding + MCTS solver/spin bugs",
+    "exported_at": "2026-06-12T02:40:04Z",
+    "path": "versions/submission_q_learning_push_v3_fix_20260612T024004Z.py",
+    "canonical_path": "submission_q_learning.py",
+    "source": "runs/q_learning/q_learning.pkl",
+    "board": "4x5 connect-3"
+  },
+  {
+    "kind": "alphazero",
+    "tag": "v3_fix2",
+    "notes": "post-MCTS sanitize_action; remove pieces<=6 opening bypass",
+    "exported_at": "2026-06-12T02:52:43Z",
+    "path": "versions/submission_alphazero_v3_fix2_20260612T025243Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_push/checkpoints/generation_0008_accepted.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "ppo",
+    "tag": "v3_fix2",
+    "notes": "post-MCTS sanitize_action; remove pieces<=6 opening bypass",
+    "exported_at": "2026-06-12T02:52:43Z",
+    "path": "versions/submission_ppo_v3_fix2_20260612T025243Z.py",
+    "canonical_path": "submission_ppo.py",
+    "source": "runs/ppo/checkpoints/ppo_900000.zip",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "dqn",
+    "tag": "v3_fix2",
+    "notes": "post-MCTS sanitize_action; remove pieces<=6 opening bypass",
+    "exported_at": "2026-06-12T02:52:43Z",
+    "path": "versions/submission_dqn_v3_fix2_20260612T025243Z.py",
+    "canonical_path": "submission_dqn.py",
+    "source": "runs/dqn/dqn.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "q_learning",
+    "tag": "v3_fix2",
+    "notes": "post-MCTS sanitize_action; remove pieces<=6 opening bypass",
+    "exported_at": "2026-06-12T02:52:43Z",
+    "path": "versions/submission_q_learning_v3_fix2_20260612T025243Z.py",
+    "canonical_path": "submission_q_learning.py",
+    "source": "runs/q_learning/q_learning.pkl",
+    "board": "4x5 connect-3"
+  },
+  {
+    "kind": "alphazero",
+    "tag": "v3_fix3",
+    "notes": "2-ply fork defense; opening only move 1-2",
+    "exported_at": "2026-06-12T03:00:07Z",
+    "path": "versions/submission_alphazero_v3_fix3_20260612T030007Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_push/checkpoints/generation_0008_accepted.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "ppo",
+    "tag": "v3_fix3",
+    "notes": "2-ply fork defense; opening only move 1-2",
+    "exported_at": "2026-06-12T03:00:07Z",
+    "path": "versions/submission_ppo_v3_fix3_20260612T030007Z.py",
+    "canonical_path": "submission_ppo.py",
+    "source": "runs/ppo/checkpoints/ppo_900000.zip",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "dqn",
+    "tag": "v3_fix3",
+    "notes": "2-ply fork defense; opening only move 1-2",
+    "exported_at": "2026-06-12T03:00:07Z",
+    "path": "versions/submission_dqn_v3_fix3_20260612T030007Z.py",
+    "canonical_path": "submission_dqn.py",
+    "source": "runs/dqn/dqn.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "q_learning",
+    "tag": "v3_fix3",
+    "notes": "2-ply fork defense; opening only move 1-2",
+    "exported_at": "2026-06-12T03:00:07Z",
+    "path": "versions/submission_q_learning_v3_fix3_20260612T030007Z.py",
+    "canonical_path": "submission_q_learning.py",
+    "source": "runs/q_learning/q_learning.pkl",
+    "board": "4x5 connect-3"
+  },
+  {
+    "kind": "alphazero",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-12T04:39:02Z",
+    "path": "versions/submission_alphazero_push_20260612T043902Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_push/checkpoints/generation_0008_accepted.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "alphazero",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-12T06:05:32Z",
+    "path": "versions/submission_alphazero_push_20260612T060532Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_push/checkpoints/generation_0008_accepted.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "alphazero",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-12T07:34:33Z",
+    "path": "versions/submission_alphazero_push_20260612T073433Z.py",
+    "canonical_path": "submission_alphazero.py",
+    "source": "runs/alphazero_push/checkpoints/generation_0008_accepted.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "ppo",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-12T07:34:33Z",
+    "path": "versions/submission_ppo_push_20260612T073433Z.py",
+    "canonical_path": "submission_ppo.py",
+    "source": "runs/ppo/checkpoints/ppo_900000.zip",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "dqn",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-12T07:34:33Z",
+    "path": "versions/submission_dqn_push_20260612T073433Z.py",
+    "canonical_path": "submission_dqn.py",
+    "source": "runs/dqn/dqn.pt",
+    "board": "6x7 connect-4"
+  },
+  {
+    "kind": "q_learning",
+    "tag": "push",
+    "notes": "Push peak negamax checkpoint; Kaggle score may differ from local negamax",
+    "exported_at": "2026-06-12T07:34:33Z",
+    "path": "versions/submission_q_learning_push_20260612T073433Z.py",
+    "canonical_path": "submission_q_learning.py",
+    "source": "runs/q_learning/q_learning.pkl",
+    "board": "4x5 connect-3"
+  }
+]

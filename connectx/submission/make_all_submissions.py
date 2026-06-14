@@ -1,20 +1,10 @@
-"""一次性导出全部四种算法的 Kaggle submission (export all four agents).
-
-对每个算法把训练好的权重序列化成 base64 字符串, 嵌入到单文件 submission_*.py 里,
-线上推理只依赖 NumPy (Kaggle 评测环境没有 torch / sb3):
-- alphazero / ppo 的模板在 make_submission.py;
-- dqn / q_learning 的模板在本文件;
-- 最后把 alphazero 版本复制为 submission.py 作为默认提交.
-
-用法 (usage):
-    python -m connectx.submission.make_all_submissions --output-dir submission --validate
-"""
-
 from __future__ import annotations
 
 import argparse
 import json
 import pickle
+import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -30,7 +20,6 @@ from connectx.submission.make_submission import (
 
 
 def export_dqn_model(model_path: str | Path) -> tuple[str, dict]:
-    """把 DQN online 网络权重导出为 base64 npz (export weights as base64-encoded npz)."""
     import torch
 
     from connectx.agents.dqn import DQNAgent
@@ -46,7 +35,6 @@ def export_dqn_model(model_path: str | Path) -> tuple[str, dict]:
 
 
 def export_q_learning_model(model_path: str | Path) -> tuple[str, dict]:
-    """把 Q-table 用 pickle 序列化后塞进 npz (Q-table pickled into the npz payload)."""
     agent = TabularQAgent.load(model_path)
     table = {str(key): value.astype(np.float32) for key, value in agent.q_table.items()}
     meta = {
@@ -226,6 +214,73 @@ def render_q_learning(weights_b64: str) -> str:
     return QLEARNING_TEMPLATE.replace("__WEIGHTS_B64__", weights_b64)
 
 
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _slug(text: str) -> str:
+    return "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in text).strip("_")
+
+
+def submission_header(
+    *,
+    kind: str,
+    source: Path,
+    tag: str,
+    notes: str,
+    board: str = "6x7 connect-4",
+) -> str:
+    lines = [
+        "# Kaggle ConnectX submission",
+        f"# algorithm: {kind}",
+        f"# board: {board}",
+        f"# checkpoint: {source}",
+        f"# tag: {tag}",
+        f"# exported_at: {_utc_now()}",
+    ]
+    if notes:
+        for note_line in notes.strip().splitlines():
+            lines.append(f"# note: {note_line.strip()}")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _board_for_kind(kind: str, meta: dict | None) -> str:
+    if kind == "q_learning" and meta and "config" in meta:
+        cfg = meta["config"]
+        return f"{cfg['rows']}x{cfg['columns']} connect-{cfg['inarow']}"
+    return "6x7 connect-4"
+
+
+def _load_registry(path: Path) -> list[dict]:
+    if not path.exists():
+        return []
+    return json.loads(path.read_text())
+
+
+def _append_registry(path: Path, entry: dict) -> None:
+    registry = _load_registry(path)
+    registry.append(entry)
+    path.write_text(json.dumps(registry, indent=2) + "\n")
+
+
+def _write_notes(output_dir: Path, registry: list[dict]) -> None:
+    lines = [
+        "ConnectX submission files (new exports go to versions/, existing files are kept by default).",
+        "",
+        "Upload to Kaggle: copy one agent() file; submission.py is only updated with --set-default.",
+        "",
+    ]
+    for item in reversed(registry[-20:]):
+        lines.append(
+            f"- [{item['exported_at']}] {item['kind']} tag={item['tag']} "
+            f"-> {item['path']} (source: {item['source']})"
+        )
+        if item.get("notes"):
+            lines.append(f"  notes: {item['notes']}")
+    (output_dir / "submission_notes.txt").write_text("\n".join(lines) + "\n")
+
+
 def make_all_submissions(
     output_dir: str | Path,
     *,
@@ -234,62 +289,122 @@ def make_all_submissions(
     dqn_model: Path | None = None,
     q_learning_model: Path | None = None,
     validate: bool = False,
+    tag: str = "export",
+    notes: str = "",
+    overwrite_algo_files: bool = False,
+    set_default: bool = False,
 ) -> dict[str, Path]:
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+    versions_dir = output_dir / "versions"
+    versions_dir.mkdir(parents=True, exist_ok=True)
+    exported_at = _utc_now()
+    tag_slug = _slug(tag)
 
     az_path = alphazero_checkpoint or best_alphazero_checkpoint()
     ppo_path = ppo_model or best_ppo_checkpoint()
     dqn_path = dqn_model or Path("runs/dqn/dqn.pt")
     ql_path = q_learning_model or Path("runs/q_learning/q_learning.pkl")
 
-    exports: list[tuple[str, str, Path]] = []
+    sources = {
+        "alphazero": az_path,
+        "ppo": ppo_path,
+        "dqn": dqn_path,
+        "q_learning": ql_path,
+    }
+
+    payloads: list[tuple[str, str, dict | None]] = []
 
     az_b64, _ = export_alphazero_checkpoint(az_path)
-    exports.append(("alphazero", render_submission("alphazero", az_b64), output_dir / "submission_alphazero.py"))
+    payloads.append(("alphazero", render_submission("alphazero", az_b64), None))
 
     ppo_b64, _ = export_ppo_model(ppo_path)
-    exports.append(("ppo", render_submission("ppo", ppo_b64), output_dir / "submission_ppo.py"))
+    payloads.append(("ppo", render_submission("ppo", ppo_b64), None))
 
     dqn_b64, _ = export_dqn_model(dqn_path)
-    exports.append(("dqn", render_dqn(dqn_b64), output_dir / "submission_dqn.py"))
+    payloads.append(("dqn", render_dqn(dqn_b64), None))
 
     ql_b64, ql_meta = export_q_learning_model(ql_path)
-    exports.append(("q_learning", render_q_learning(ql_b64), output_dir / "submission_q_learning.py"))
+    payloads.append(("q_learning", render_q_learning(ql_b64), ql_meta))
 
     written: dict[str, Path] = {}
-    for name, content, path in exports:
-        path.write_text(content)
-        written[name] = path
+    registry_path = output_dir / "submission_registry.json"
+    manifest_entries: dict[str, dict] = {}
+
+    for kind, body, meta in payloads:
+        source = sources[kind]
+        if not source.exists():
+            continue
+        board = _board_for_kind(kind, meta)
+        header = submission_header(kind=kind, source=source, tag=tag, notes=notes, board=board)
+        content = header + body.lstrip("\n")
+
+        version_name = f"submission_{kind}_{tag_slug}_{exported_at.replace(':', '').replace('-', '')}.py"
+        version_path = versions_dir / version_name
+        version_path.write_text(content)
+        written[kind] = version_path
+
+        canonical = output_dir / f"submission_{kind}.py"
+        if overwrite_algo_files or not canonical.exists():
+            canonical.write_text(content)
+
+        entry = {
+            "kind": kind,
+            "tag": tag,
+            "notes": notes,
+            "exported_at": exported_at,
+            "path": str(version_path.relative_to(output_dir)),
+            "canonical_path": str(canonical.relative_to(output_dir)) if canonical.exists() else "",
+            "source": str(source),
+            "board": board,
+        }
+        _append_registry(registry_path, entry)
+        manifest_entries[kind] = entry
+
         if validate:
-            if name == "q_learning":
-                cfg = ql_meta["config"]
+            if kind == "q_learning":
+                cfg = ql_meta["config"] if ql_meta else {"rows": 4, "columns": 5, "inarow": 3}
                 validate_submission(
-                    path,
+                    version_path,
                     games=2,
                     configuration={**cfg, "actTimeout": 2, "timeout": 2},
                 )
             else:
-                validate_submission(path, games=2)
+                validate_submission(version_path, games=2)
 
-    (output_dir / "submission.py").write_text((output_dir / "submission_alphazero.py").read_text())
+    if set_default and "alphazero" in written:
+        default_path = output_dir / "submission.py"
+        default_src = output_dir / "submission_alphazero.py"
+        if default_src.exists():
+            default_path.write_text(default_src.read_text())
+        (output_dir / "submission_kind.txt").write_text(
+            f"alphazero\n# tag: {tag}\n# source: {sources['alphazero']}\n# exported: {exported_at}\n"
+        )
 
     manifest = {
-        name: {
-            "path": str(path),
-            "source": str(
-                {
-                    "alphazero": az_path,
-                    "ppo": ppo_path,
-                    "dqn": dqn_path,
-                    "q_learning": ql_path,
-                }[name]
-            ),
-        }
-        for name, path in written.items()
+        "latest_tag": tag,
+        "latest_export": exported_at,
+        "notes": notes,
+        "overwrite_algo_files": overwrite_algo_files,
+        "set_default": set_default,
+        "algorithms": manifest_entries,
+        "versions_dir": "versions",
     }
     (output_dir / "submissions_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    _write_notes(output_dir, _load_registry(registry_path))
     return written
+
+
+def wait_for_alphazero(timeout_sec: int = 7200, poll_sec: int = 60) -> None:
+    final = Path("runs/alphazero_overnight/checkpoints/alphazero_final.pt")
+    deadline = time.time() + timeout_sec
+    while time.time() < deadline:
+        if final.exists():
+            return
+        if not __import__("subprocess").run(["pgrep", "-f", "train_alphazero"], capture_output=True).returncode == 0:
+            return
+        time.sleep(poll_sec)
+    raise TimeoutError(f"AlphaZero still running after {timeout_sec}s")
 
 
 def main() -> None:
@@ -299,8 +414,25 @@ def main() -> None:
     parser.add_argument("--ppo-model", default=None)
     parser.add_argument("--dqn-model", default=None)
     parser.add_argument("--q-learning-model", default=None)
-    parser.add_argument("--validate", action="store_true", help="导出后用 kaggle_environments 本地验证")
+    parser.add_argument("--wait-alphazero", action="store_true")
+    parser.add_argument("--validate", action="store_true")
+    parser.add_argument("--tag", default="export", help="Version label for filenames and manifest (e.g. overnight_gen38, push).")
+    parser.add_argument("--notes", default="", help="Free-form notes stored in headers and submission_notes.txt.")
+    parser.add_argument(
+        "--overwrite-algo-files",
+        action="store_true",
+        help="Replace submission_<algo>.py; default keeps existing and only adds versions/.",
+    )
+    parser.add_argument(
+        "--set-default",
+        action="store_true",
+        help="Update submission.py from submission_alphazero.py (off by default).",
+    )
     args = parser.parse_args()
+
+    if args.wait_alphazero:
+        print("Waiting for AlphaZero overnight to finish...", flush=True)
+        wait_for_alphazero()
 
     paths = make_all_submissions(
         args.output_dir,
@@ -309,6 +441,10 @@ def main() -> None:
         dqn_model=Path(args.dqn_model) if args.dqn_model else None,
         q_learning_model=Path(args.q_learning_model) if args.q_learning_model else None,
         validate=args.validate,
+        tag=args.tag,
+        notes=args.notes,
+        overwrite_algo_files=args.overwrite_algo_files,
+        set_default=args.set_default,
     )
     for name, path in paths.items():
         print(f"{name}: {path}")

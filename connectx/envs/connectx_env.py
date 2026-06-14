@@ -62,6 +62,20 @@ def encode_board(
     )
 
 
+# 左右镜像增强: ConnectX 棋盘唯一的对称, 第 c 列与第 (columns-1-c) 列互换。
+# 用 ascontiguousarray 消除负步长视图, 方便后续 torch.from_numpy。
+def mirror_encoded_state(state: np.ndarray, columns: int) -> np.ndarray:
+    return np.ascontiguousarray(np.asarray(state)[..., ::-1])
+
+
+def mirror_policy(policy: np.ndarray, columns: int) -> np.ndarray:
+    return np.ascontiguousarray(np.asarray(policy)[..., ::-1])
+
+
+def mirror_mask(mask: np.ndarray, columns: int) -> np.ndarray:
+    return np.ascontiguousarray(np.asarray(mask)[..., ::-1])
+
+
 def valid_action_mask(
     board: list[int] | tuple[int, ...] | np.ndarray,
     rows: int = 6,

@@ -1,9 +1,3 @@
-"""Agent 公共工具 (shared helpers): 配置/观测归一化与带掩码的动作选择.
-
-Kaggle 传入的 obs/config 可能是 dict 也可能是带属性的对象 (Struct),
-这里统一转换成内部格式, 各 agent 不用再关心两种形态的差异。
-"""
-
 from __future__ import annotations
 
 from typing import Any, Protocol
@@ -14,14 +8,11 @@ from connectx.envs.connectx_env import ConnectXConfig, legal_actions
 
 
 class AgentCallable(Protocol):
-    """统一的 agent 签名: (obs, config) -> 落子列号 (column index)."""
-
     def __call__(self, obs: dict[str, Any], config: ConnectXConfig) -> int:
         ...
 
 
 def config_value(config: Any, name: str, default: int) -> int:
-    # 兼容 dict 和对象两种 config 形态 (Kaggle 传 Struct, 本地常用 dict)
     if isinstance(config, dict):
         return int(config.get(name, default))
     return int(getattr(config, name, default))
@@ -86,7 +77,6 @@ def sample_masked_action(logits: np.ndarray, mask: np.ndarray, temperature: floa
 
 
 def center_preferred_action(mask: np.ndarray) -> int:
-    """从中间列向两边找第一个合法列 (ConnectX 里中间列价值最高的先验)."""
     mask = np.asarray(mask, dtype=bool)
     columns = len(mask)
     order = sorted(range(columns), key=lambda col: (abs(col - columns // 2), col))

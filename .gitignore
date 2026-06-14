@@ -11,5 +11,8 @@ __pycache__/
 runs/
 logs/
 
+# 提交版本快照 (内嵌权重、自动生成, 太大不进库 / weight-embedded auto-generated snapshots)
+submission/versions/
+
 # 系统文件
 .DS_Store

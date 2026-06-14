@@ -1,0 +1,47 @@
+{
+  "positions": 700,
+  "baseline": {
+    "overall": {
+      "total": 700,
+      "perfect": 648,
+      "rate": 0.9257142857142857
+    },
+    "opening": {
+      "total": 100,
+      "perfect": 58,
+      "rate": 0.58
+    },
+    "midgame": {
+      "total": 500,
+      "perfect": 490,
+      "rate": 0.98
+    },
+    "endgame": {
+      "total": 100,
+      "perfect": 100,
+      "rate": 1.0
+    }
+  },
+  "candidate": {
+    "overall": {
+      "total": 700,
+      "perfect": 653,
+      "rate": 0.9328571428571428
+    },
+    "opening": {
+      "total": 100,
+      "perfect": 60,
+      "rate": 0.6
+    },
+    "midgame": {
+      "total": 500,
+      "perfect": 493,
+      "rate": 0.986
+    },
+    "endgame": {
+      "total": 100,
+      "perfect": 100,
+      "rate": 1.0
+    }
+  }
+}

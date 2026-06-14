@@ -1,0 +1,44 @@
+ConnectX submission files (new exports go to versions/, existing files are kept by default).
+
+Upload to Kaggle: copy one agent() file; submission.py is only updated with --set-default.
+
+- [2026-06-12T07:34:33Z] q_learning tag=push -> versions/submission_q_learning_push_20260612T073433Z.py (source: runs/q_learning/q_learning.pkl)
+  notes: Push peak negamax checkpoint; Kaggle score may differ from local negamax
+- [2026-06-12T07:34:33Z] dqn tag=push -> versions/submission_dqn_push_20260612T073433Z.py (source: runs/dqn/dqn.pt)
+  notes: Push peak negamax checkpoint; Kaggle score may differ from local negamax
+- [2026-06-12T07:34:33Z] ppo tag=push -> versions/submission_ppo_push_20260612T073433Z.py (source: runs/ppo/checkpoints/ppo_900000.zip)
+  notes: Push peak negamax checkpoint; Kaggle score may differ from local negamax
+- [2026-06-12T07:34:33Z] alphazero tag=push -> versions/submission_alphazero_push_20260612T073433Z.py (source: runs/alphazero_push/checkpoints/generation_0008_accepted.pt)
+  notes: Push peak negamax checkpoint; Kaggle score may differ from local negamax
+- [2026-06-12T06:05:32Z] alphazero tag=push -> versions/submission_alphazero_push_20260612T060532Z.py (source: runs/alphazero_push/checkpoints/generation_0008_accepted.pt)
+  notes: Push peak negamax checkpoint; Kaggle score may differ from local negamax
+- [2026-06-12T04:39:02Z] alphazero tag=push -> versions/submission_alphazero_push_20260612T043902Z.py (source: runs/alphazero_push/checkpoints/generation_0008_accepted.pt)
+  notes: Push peak negamax checkpoint; Kaggle score may differ from local negamax
+- [2026-06-12T03:00:07Z] q_learning tag=v3_fix3 -> versions/submission_q_learning_v3_fix3_20260612T030007Z.py (source: runs/q_learning/q_learning.pkl)
+  notes: 2-ply fork defense; opening only move 1-2
+- [2026-06-12T03:00:07Z] dqn tag=v3_fix3 -> versions/submission_dqn_v3_fix3_20260612T030007Z.py (source: runs/dqn/dqn.pt)
+  notes: 2-ply fork defense; opening only move 1-2
+- [2026-06-12T03:00:07Z] ppo tag=v3_fix3 -> versions/submission_ppo_v3_fix3_20260612T030007Z.py (source: runs/ppo/checkpoints/ppo_900000.zip)
+  notes: 2-ply fork defense; opening only move 1-2
+- [2026-06-12T03:00:07Z] alphazero tag=v3_fix3 -> versions/submission_alphazero_v3_fix3_20260612T030007Z.py (source: runs/alphazero_push/checkpoints/generation_0008_accepted.pt)
+  notes: 2-ply fork defense; opening only move 1-2
+- [2026-06-12T02:52:43Z] q_learning tag=v3_fix2 -> versions/submission_q_learning_v3_fix2_20260612T025243Z.py (source: runs/q_learning/q_learning.pkl)
+  notes: post-MCTS sanitize_action; remove pieces<=6 opening bypass
+- [2026-06-12T02:52:43Z] dqn tag=v3_fix2 -> versions/submission_dqn_v3_fix2_20260612T025243Z.py (source: runs/dqn/dqn.pt)
+  notes: post-MCTS sanitize_action; remove pieces<=6 opening bypass
+- [2026-06-12T02:52:43Z] ppo tag=v3_fix2 -> versions/submission_ppo_v3_fix2_20260612T025243Z.py (source: runs/ppo/checkpoints/ppo_900000.zip)
+  notes: post-MCTS sanitize_action; remove pieces<=6 opening bypass
+- [2026-06-12T02:52:43Z] alphazero tag=v3_fix2 -> versions/submission_alphazero_v3_fix2_20260612T025243Z.py (source: runs/alphazero_push/checkpoints/generation_0008_accepted.pt)
+  notes: post-MCTS sanitize_action; remove pieces<=6 opening bypass
+- [2026-06-12T02:40:04Z] q_learning tag=push_v3_fix -> versions/submission_q_learning_push_v3_fix_20260612T024004Z.py (source: runs/q_learning/q_learning.pkl)
+  notes: Fix BN fold conv2 padding + MCTS solver/spin bugs
+- [2026-06-12T02:40:04Z] dqn tag=push_v3_fix -> versions/submission_dqn_push_v3_fix_20260612T024004Z.py (source: runs/dqn/dqn.pt)
+  notes: Fix BN fold conv2 padding + MCTS solver/spin bugs
+- [2026-06-12T02:40:04Z] ppo tag=push_v3_fix -> versions/submission_ppo_push_v3_fix_20260612T024004Z.py (source: runs/ppo/checkpoints/ppo_900000.zip)
+  notes: Fix BN fold conv2 padding + MCTS solver/spin bugs
+- [2026-06-12T02:40:04Z] alphazero tag=push_v3_fix -> versions/submission_alphazero_push_v3_fix_20260612T024004Z.py (source: runs/alphazero_push/checkpoints/generation_0008_accepted.pt)
+  notes: Fix BN fold conv2 padding + MCTS solver/spin bugs
+- [2026-06-12T02:00:14Z] q_learning tag=push -> versions/submission_q_learning_push_20260612T020014Z.py (source: runs/q_learning/q_learning.pkl)
+  notes: Push peak negamax checkpoint; Kaggle score may differ from local negamax
+- [2026-06-12T02:00:14Z] dqn tag=push -> versions/submission_dqn_push_20260612T020014Z.py (source: runs/dqn/dqn.pt)
+  notes: Push peak negamax checkpoint; Kaggle score may differ from local negamax

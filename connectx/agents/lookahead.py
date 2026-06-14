@@ -1,12 +1,3 @@
-"""战术安全层 (tactical safety layer): 一步前瞻的必胜/必堵规则.
-
-所有学习型 agent (Q-learning / DQN / PPO / AlphaZero) 都可以套这一层:
-1. 自己有一步制胜的列 -> 直接下 (take the immediate win);
-2. 对手下一步能赢 -> 立刻堵住 (block the immediate loss);
-3. 否则才采用策略网络给出的动作。
-这能消除神经网络偶尔漏看一步杀招导致的低级失误, 对 Kaggle 分数提升明显。
-"""
-
 from __future__ import annotations
 
 from typing import Any, Callable
@@ -24,12 +15,76 @@ from connectx.envs.connectx_env import (
 )
 
 
+def opponent_win_count(
+    board: list[int],
+    mark: int,
+    config: ConnectXConfig,
+) -> int:
+    opponent = opponent_mark(mark)
+    return sum(
+        1
+        for action in legal_actions(board, config.rows, config.columns)
+        if check_winner(
+            next_board(board, action, opponent, config.rows, config.columns),
+            opponent,
+            config.rows,
+            config.columns,
+            config.inarow,
+        )
+    )
+
+
+def opponent_best_reply_threat_count(
+    board: list[int],
+    mark: int,
+    config: ConnectXConfig,
+) -> int:
+    """Max immediate winning columns for opponent after one opponent reply."""
+    opponent = opponent_mark(mark)
+    best = 0
+    for action in legal_actions(board, config.rows, config.columns):
+        after = next_board(board, action, opponent, config.rows, config.columns)
+        best = max(best, opponent_win_count(after, mark, config))
+    return best
+
+
+def proactive_defensive_action(
+    board: list[int],
+    mark: int,
+    config: ConnectXConfig,
+) -> int | None:
+    legal = legal_actions(board, config.rows, config.columns)
+    if not legal:
+        return None
+
+    def move_score(action: int) -> tuple[int, int, int]:
+        after = next_board(board, action, mark, config.rows, config.columns)
+        immediate = opponent_win_count(after, mark, config)
+        reply = opponent_best_reply_threat_count(after, mark, config)
+        col = action
+        repeat = 0
+        for row in range(config.rows):
+            idx = row * config.columns + col
+            if board[idx] == mark:
+                repeat = config.rows - row
+                break
+        return immediate, reply, repeat
+
+    best_action = legal[0]
+    best_score = move_score(best_action)
+    for action in legal[1:]:
+        score = move_score(action)
+        if score < best_score:
+            best_score = score
+            best_action = action
+    return best_action
+
+
 def immediate_winning_actions(
     board: list[int],
     mark: int,
     config: ConnectXConfig,
 ) -> list[int]:
-    """枚举 mark 一步即可获胜的所有列 (columns that win immediately)."""
     wins: list[int] = []
     for action in legal_actions(board, config.rows, config.columns):
         candidate = next_board(board, action, mark, config.rows, config.columns)
@@ -38,20 +93,45 @@ def immediate_winning_actions(
     return wins
 
 
+def best_block_action(
+    board: list[int],
+    mark: int,
+    config: ConnectXConfig,
+) -> int | None:
+    """Block opponent wins; when multiple threats exist, pick the most defensive column."""
+    opponent = opponent_mark(mark)
+    threats = immediate_winning_actions(board, opponent, config)
+    if not threats:
+        return None
+    if len(threats) == 1:
+        return threats[0]
+
+    best_action = threats[0]
+    best_remaining = len(threats)
+    for action in threats:
+        after = next_board(board, action, mark, config.rows, config.columns)
+        remaining = len(immediate_winning_actions(after, opponent, config))
+        if remaining < best_remaining:
+            best_remaining = remaining
+            best_action = action
+    return best_action
+
+
 def tactical_action(
     board: list[int],
     mark: int,
     config: ConnectXConfig,
 ) -> int | None:
-    """优先级: 先拿下自己的必胜点, 再堵对手的必胜点; 都没有则返回 None."""
     own_wins = immediate_winning_actions(board, mark, config)
     if own_wins:
         return own_wins[0]
 
-    opponent = opponent_mark(mark)
-    blocks = immediate_winning_actions(board, opponent, config)
-    if blocks:
-        return blocks[0]
+    block = best_block_action(board, mark, config)
+    if block is not None:
+        return block
+
+    if opponent_best_reply_threat_count(board, mark, config) >= 2:
+        return proactive_defensive_action(board, mark, config)
 
     return None
 
@@ -62,7 +142,6 @@ def safe_policy_action(
     config: ConnectXConfig,
     policy_action: int | None,
 ) -> int:
-    """战术规则优先, 然后采纳策略动作; 策略动作非法时回退到中心偏好列."""
     action = tactical_action(board, mark, config)
     if action is not None:
         return action
@@ -86,7 +165,6 @@ def wrap_with_tactical_safety(
 
 
 def tactical_agent(obs: dict[str, Any], config: Any) -> int:
-    """纯规则 baseline: 只用战术安全层 + 中心偏好, 不依赖任何学习模型."""
     normalized = normalize_config(config)
     board, mark = obs_board_mark(obs)
     mask = np.asarray(valid_action_mask(board, normalized.rows, normalized.columns), dtype=bool)

@@ -5,12 +5,23 @@ import csv
 from pathlib import Path
 
 from connectx.agents.q_learning import train_tabular_q_learning
+from connectx.agents.reward_shaping import RewardShapingConfig
 from connectx.envs.connectx_env import ConnectXConfig
+from connectx.training.run_manifest import reward_shaping_fields, write_run_manifest
 
 
 def train(args: argparse.Namespace) -> None:
     run_dir = Path(args.run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
+    write_run_manifest(
+        run_dir,
+        algorithm="q_learning",
+        episodes=args.episodes,
+        rows=args.rows,
+        columns=args.columns,
+        inarow=args.inarow,
+        **reward_shaping_fields(args.reward_shaping),
+    )
     agent, curve = train_tabular_q_learning(
         args.episodes,
         config=ConnectXConfig(rows=args.rows, columns=args.columns, inarow=args.inarow),
@@ -18,12 +29,21 @@ def train(args: argparse.Namespace) -> None:
         gamma=args.gamma,
         epsilon_start=args.epsilon_start,
         epsilon_end=args.epsilon_end,
+        reward_shaping=RewardShapingConfig() if args.reward_shaping else None,
     )
     agent.save(run_dir / "q_learning.pkl")
     with (run_dir / "learning_curve.csv").open("w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["episode", "epsilon", "winner", "q_states"])
         writer.writeheader()
         writer.writerows(curve)
+    write_run_manifest(
+        run_dir,
+        algorithm="q_learning",
+        episodes=args.episodes,
+        final_q_states=float(curve[-1]["q_states"]) if curve else 0.0,
+        status="completed",
+        **reward_shaping_fields(args.reward_shaping),
+    )
 
 
 def parse_args() -> argparse.Namespace:
@@ -37,6 +57,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--gamma", type=float, default=0.99)
     parser.add_argument("--epsilon-start", type=float, default=1.0)
     parser.add_argument("--epsilon-end", type=float, default=0.05)
+    parser.add_argument("--reward-shaping", action="store_true", help="Enable heuristic intermediate rewards.")
     return parser.parse_args()
 
 

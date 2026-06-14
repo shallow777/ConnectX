@@ -1,11 +1,3 @@
-"""PPO self-play 所需的对手池与单智能体环境包装 (opponent pool & env wrapper).
-
-MaskablePPO 是单智能体算法, 而 ConnectX 是双人博弈, 所以这里把
-"对手怎么下"折叠进环境: 学习方每走一步, 环境内部立刻让对手 (从
-OpponentPool 采样) 走一步, 对外表现成一个普通的单智能体 Gym 环境。
-对手池里可以不断加入历史 PPO checkpoint, 形成联盟自我对弈 (league self-play)。
-"""
-
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -18,6 +10,7 @@ import numpy as np
 from gymnasium import spaces
 
 from connectx.agents.lookahead import safe_policy_action
+from connectx.agents.reward_shaping import RewardShapingConfig, compute_step_reward
 from connectx.agents.utils import center_preferred_action, masked_argmax
 from connectx.envs.connectx_env import (
     ConnectXConfig,
@@ -31,13 +24,11 @@ OpponentFn = Callable[[dict[str, Any], ConnectXConfig], int]
 
 
 def center_opponent(obs: dict[str, Any], config: ConnectXConfig) -> int:
-    """规则对手: 永远优先下中间列 (center-first heuristic)."""
     mask = np.asarray(obs["action_mask"], dtype=bool)
     return center_preferred_action(mask)
 
 
 def random_opponent(obs: dict[str, Any], config: ConnectXConfig) -> int:
-    """规则对手: 在合法列中均匀随机落子."""
     legal = np.flatnonzero(np.asarray(obs["action_mask"], dtype=bool))
     if legal.size == 0:
         return 0
@@ -46,10 +37,8 @@ def random_opponent(obs: dict[str, Any], config: ConnectXConfig) -> int:
 
 @dataclass
 class OpponentPool:
-    """对手池: 初始只有两个规则对手, 训练中可不断加入冻结的 PPO checkpoint."""
-
     opponents: list[OpponentFn] = field(default_factory=lambda: [center_opponent, random_opponent])
-    probabilities: list[float] | None = None  # None 表示均匀采样
+    probabilities: list[float] | None = None
 
     def sample(self) -> OpponentFn:
         if not self.opponents:
@@ -61,8 +50,6 @@ class OpponentPool:
         return self.opponents[int(np.random.choice(np.arange(len(self.opponents)), p=probs))]
 
     def add_sb3_model(self, model_path: str | Path, deterministic: bool = True) -> None:
-        """把一个 MaskablePPO checkpoint 冻结后加入对手池 (模型懒加载)."""
-
         def opponent(obs: dict[str, Any], config: ConnectXConfig) -> int:
             del config
             try:
@@ -88,11 +75,11 @@ class OpponentPool:
 
 
 class SelfPlayConnectXEnv(gym.Env):
-    """给 PPO 用的单智能体 ConnectX 环境 (single-agent wrapper for self-play).
+    """Single-agent ConnectX environment for PPO self-play.
 
-    学习方整局固定执一种棋子 (reset 时随机先后手); 学习方每走一步,
-    环境内部立即让采样到的对手回应一步, 除非对局已结束。
-    观测始终从学习方视角编码; 奖励只在终局给出: 胜 +1 / 负 -1 / 平 0。
+    The learning agent controls one mark for the whole episode. After every
+    learner move, the sampled opponent responds immediately unless the episode
+    has ended. Observations are always encoded from the learner mark's view.
     """
 
     metadata = {"render_modes": ["ansi"]}
@@ -105,6 +92,7 @@ class SelfPlayConnectXEnv(gym.Env):
         inarow: int = 4,
         randomize_player: bool = True,
         tactical_safety: bool = True,
+        reward_shaping: RewardShapingConfig | None = None,
     ) -> None:
         super().__init__()
         self.base_env = ConnectXEnv(rows=rows, columns=columns, inarow=inarow)
@@ -112,6 +100,7 @@ class SelfPlayConnectXEnv(gym.Env):
         self.opponent_pool = opponent_pool or OpponentPool()
         self.randomize_player = randomize_player
         self.tactical_safety = tactical_safety
+        self.reward_shaping = reward_shaping
 
         self.action_space = spaces.Discrete(columns)
         self.observation_space = spaces.Dict(
@@ -136,11 +125,9 @@ class SelfPlayConnectXEnv(gym.Env):
     ) -> tuple[dict[str, np.ndarray], dict[str, Any]]:
         super().reset(seed=seed)
         self.base_env.reset(seed=seed)
-        # 随机先后手 + 每局重新采样对手, 保证训练数据多样性
         self.learner_mark = int(np.random.choice([1, 2])) if self.randomize_player else 1
         self.opponent = self.opponent_pool.sample()
 
-        # 学习方执后手时, 先让对手走第一步
         if self.learner_mark == 2:
             self._opponent_turn()
 
@@ -161,13 +148,25 @@ class SelfPlayConnectXEnv(gym.Env):
                 selected,
             )
 
+        before = list(self.base_env.board)
         _obs, _reward, terminated, truncated, info = self.base_env.step(selected)
         if terminated or truncated:
             return self._learner_observation(), self._terminal_reward(), terminated, truncated, self._info(**info)
 
+        after_learner = list(self.base_env.board)
+        step_reward = compute_step_reward(
+            before,
+            after_learner,
+            self.learner_mark,
+            self.config,
+            self.reward_shaping,
+        )
+
         self._opponent_turn()
-        terminated = self.base_env.done
-        return self._learner_observation(), self._terminal_reward() if terminated else 0.0, terminated, False, self._info()
+        if self.base_env.done:
+            return self._learner_observation(), self._terminal_reward(), True, False, self._info()
+
+        return self._learner_observation(), step_reward, False, False, self._info()
 
     def action_masks(self) -> np.ndarray:
         return valid_action_mask(self.base_env.board, self.config.rows, self.config.columns).astype(bool)
@@ -176,7 +175,6 @@ class SelfPlayConnectXEnv(gym.Env):
         return self.base_env.render()
 
     def _opponent_turn(self) -> None:
-        """轮到对手时让对手走一步 (终局或不该对手走时直接返回)."""
         if self.base_env.done or self.base_env.current_mark == self.learner_mark:
             return
         obs = self._mark_observation(self.base_env.current_mark)
@@ -186,7 +184,6 @@ class SelfPlayConnectXEnv(gym.Env):
         self.base_env.step(int(action))
 
     def _terminal_reward(self) -> float:
-        """终局奖励 (从学习方视角): 胜 +1 / 负 -1 / 平局或未结束 0."""
         if not self.base_env.done:
             return 0.0
         if self.base_env.winner == 0:
@@ -221,11 +218,6 @@ class SelfPlayConnectXEnv(gym.Env):
 
 
 def make_sb3_ppo_agent(model_path: str | Path, deterministic: bool = True) -> Callable[[dict[str, Any], ConnectXConfig], int]:
-    """从 MaskablePPO checkpoint 构造推理 agent.
-
-    兼容两种观测: 训练环境的 dict 观测, 或 Kaggle 的原始 board/mark (现场编码)。
-    """
-
     def agent(obs: dict[str, Any], config: ConnectXConfig) -> int:
         try:
             from sb3_contrib import MaskablePPO

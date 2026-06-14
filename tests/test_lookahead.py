@@ -20,6 +20,17 @@ def test_tactical_action_blocks_opponent_immediate_win():
     assert tactical_action(board, 1, config) == 3
 
 
+def test_tactical_action_blocks_open_two_before_fork():
+    """Opponent bottom row at cols 3,4: must block extension, not stack center."""
+    config = ConnectXConfig()
+    board = [0] * 42
+    board[5 * 7 + 3] = 2
+    board[5 * 7 + 4] = 2
+
+    action = tactical_action(board, 1, config)
+    assert action in (2, 5)
+
+
 def test_safe_policy_falls_back_when_policy_action_is_illegal():
     config = ConnectXConfig()
     board = [0] * 42

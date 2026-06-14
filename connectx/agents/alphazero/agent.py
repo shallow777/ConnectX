@@ -1,9 +1,3 @@
-"""把训练好的 AlphaZero 模型包装成 (obs, config) -> action 的推理 agent.
-
-实战推理: MCTS 关闭 Dirichlet 噪声、温度趋近 0 (取访问次数最多的列),
-外层再套战术安全层兜底。
-"""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -25,8 +19,6 @@ def make_alphazero_agent_from_model(
     device: str = "cpu",
     tactical_safety: bool = True,
 ) -> Callable[[dict[str, Any], ConnectXConfig], int]:
-    """从已加载的模型构造 agent (评估模式: 无噪声, 温度 ~0 即贪心选列)."""
-
     def agent(obs: dict[str, Any], config: ConnectXConfig) -> int:
         board, mark = obs_board_mark(obs)
         normalized = normalize_config(config)
@@ -48,8 +40,6 @@ def make_alphazero_agent(
     device: str = "cpu",
     tactical_safety: bool = True,
 ) -> Callable[[dict[str, Any], ConnectXConfig], int]:
-    """从 checkpoint 路径构造 agent; 模型首次调用时才加载 (lazy load)."""
-
     def agent(obs: dict[str, Any], config: ConnectXConfig) -> int:
         if not hasattr(agent, "_model"):
             model, _payload = load_checkpoint(checkpoint_path, map_location=device)

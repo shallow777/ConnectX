@@ -1,0 +1,79 @@
+==============================================
+ConnectX overnight pipeline started: 2026-06-12T17:04:40Z
+Working directory: /root/autodl-tmp/ConnectX_new
+==============================================
+
+>>> [P1] 17:04:40 Validate cached submission
+PASS: A forward equivalence on 1000 positions (mirror policy flip checked)
+PASS: B MCTS sims ratio min=1.46 across 5 midgame boards
+PASS: C fast arena score 71.5/100=0.715, 0 incidents
+RESULT: PASS
+Wrote /root/autodl-tmp/ConnectX_new/results/validate_cached.md
+Prompt ① PASS
+
+>>> [P2a] 17:22:05 Solver diagnosis
+Wrote /root/autodl-tmp/ConnectX_new/results/solver_diagnosis.md
+
+>>> [P2b] 17:32:44 Build hybrid submission
+Wrote submission/submission_alphazero_hybrid_gen8.py
+Built submission/submission_alphazero_hybrid_gen8.py
+
+>>> [P2c] 17:32:46 Hybrid validation (gates A + bitboard)
+Loading environment llm_20_questions failed: No module named 'transformers'
+termcolor not installed, skipping dependency
+Loading environment lux_ai_s2 failed: No module named 'scipy'
+=== Hybrid validation ===
+[PASS] A3 bitboard parity: 100000 positions zero diff
+[PASS] A4 opening center: first move=3
+[PASS] A1 safety: timeouts=0 illegal=0 exceptions=0 over 40 games
+[PASS] A2 endgame wins: 10/10 in optimal set
+[FAIL] A2b losing fight: only 1 positions
+RESULT: FAIL
+Wrote /root/autodl-tmp/ConnectX_new/results/validate_hybrid.md
+WARN: fast hybrid gates failed; continuing to full validation anyway
+
+>>> [P2d] 18:04:45 Hybrid validation (full, includes PMR)
+Loading environment llm_20_questions failed: No module named 'transformers'
+termcolor not installed, skipping dependency
+Loading environment lux_ai_s2 failed: No module named 'scipy'
+[solver] annotated 100/300
+[solver] annotated 200/300
+[solver] annotated 300/300
+[baseline_682] 25/300
+[baseline_682] 50/300
+[baseline_682] 75/300
+[baseline_682] 100/300
+[baseline_682] 125/300
+[baseline_682] 150/300
+[baseline_682] 175/300
+[baseline_682] 200/300
+[baseline_682] 225/300
+[baseline_682] 250/300
+[baseline_682] 275/300
+[baseline_682] 300/300
+[candidate_gen8] 25/300
+[candidate_gen8] 50/300
+[candidate_gen8] 75/300
+[candidate_gen8] 100/300
+[candidate_gen8] 125/300
+[candidate_gen8] 150/300
+[candidate_gen8] 175/300
+[candidate_gen8] 200/300
+[candidate_gen8] 225/300
+[candidate_gen8] 250/300
+[candidate_gen8] 275/300
+[candidate_gen8] 300/300
+=== Hybrid validation ===
+[PASS] A3 bitboard parity: 100000 positions zero diff
+[PASS] A4 opening center: first move=3
+[PASS] A1 safety: timeouts=0 illegal=0 exceptions=0 over 40 games
+[PASS] A2 endgame wins: 10/10 in optimal set
+[FAIL] A2b losing fight: only 1 positions
+[PASS] B1 fast arena: score 116.5/200 = 0.583
+[FAIL] B2 full-time arena: score 0.0/20=0.000 timeouts=0 illegal=0
+[PASS] C PMR regression: hybrid overall=0.940 cached=0.940; endgame hybrid=1.000 cached=1.000
+RESULT: FAIL
+Wrote /root/autodl-tmp/ConnectX_new/results/validate_hybrid.md
+!!! PIPELINE FAILED at step: P2d validate_hybrid
+See /root/autodl-tmp/ConnectX_new/results/overnight_pipeline.log
+EXIT_CODE=1

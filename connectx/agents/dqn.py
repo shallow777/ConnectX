@@ -1,13 +1,3 @@
-"""DQN baseline, 跑在标准 6x7 connect-4 棋盘上.
-
-实现要点 (key components):
-- 双卷积层 + MLP 的 Q 网络, 输入是 2 通道棋盘编码 (见 encode_board);
-- online / target 双网络 + replay buffer, 即经典 DQN 配方;
-- 与 q_learning.py 相同的 negamax 风格 target:
-  y = r - gamma * max_a' Q_target(s', a'), 因为 s' 轮到对手行动;
-- 非法动作在取 max 时用 -1e9 掩掉 (action masking)。
-"""
-
 from __future__ import annotations
 
 from collections import deque
@@ -21,6 +11,7 @@ from torch import nn
 from torch.nn import functional as F
 
 from connectx.agents.lookahead import safe_policy_action
+from connectx.agents.reward_shaping import RewardShapingConfig, compute_step_reward
 from connectx.agents.utils import epsilon_greedy_action
 from connectx.envs.connectx_env import (
     ConnectXConfig,
@@ -34,8 +25,6 @@ from connectx.envs.connectx_env import (
 
 
 class DQNNet(nn.Module):
-    """卷积 Q 网络: (2, rows, columns) 棋盘编码 -> 每列一个 Q 值."""
-
     def __init__(self, rows: int = 6, columns: int = 7, channels: int = 64) -> None:
         super().__init__()
         self.rows = rows
@@ -58,8 +47,6 @@ class DQNNet(nn.Module):
 
 @dataclass(frozen=True)
 class DQNTransition:
-    """单步转移样本; mask/next_mask 记录两个状态各自的合法动作."""
-
     state: np.ndarray
     action: int
     reward: float
@@ -127,10 +114,9 @@ class DQNAgent:
         self.online.train()
         q = self.online(states).gather(1, actions.unsqueeze(1)).squeeze(1)
         with torch.no_grad():
-            # target 网络 + 动作掩码取 max; 注意减号: 下一状态轮到对手 (negamax target)
             next_q = self.target(next_states).masked_fill(~next_masks, -1e9).max(dim=1).values
             target = rewards - self.gamma * next_q * (~done).float()
-        loss = F.smooth_l1_loss(q, target)  # Huber loss, 比 MSE 对离群值更稳
+        loss = F.smooth_l1_loss(q, target)
 
         self.optimizer.zero_grad(set_to_none=True)
         loss.backward()
@@ -175,8 +161,6 @@ class DQNAgent:
 
 
 def make_dqn_agent(path: str | Path, device: str = "cpu", tactical_safety: bool = True):
-    """从 checkpoint 构造推理 agent; 模型挂在闭包属性上实现懒加载 (lazy load)."""
-
     def agent(obs: dict[str, Any], config: ConnectXConfig) -> int:
         if not hasattr(agent, "_dqn"):
             agent._dqn = DQNAgent.load(path, device=device)  # type: ignore[attr-defined]
@@ -202,11 +186,8 @@ def train_dqn_selfplay(
     epsilon_start: float = 1.0,
     epsilon_end: float = 0.05,
     device: str = "cpu",
+    reward_shaping: RewardShapingConfig | None = None,
 ) -> tuple[DQNAgent, list[dict[str, float]]]:
-    """Self-play 训练 DQN: 双方共用同一个网络轮流落子, 每步都进 replay buffer.
-
-    返回 (agent, 学习曲线); 曲线记录 epsilon / 胜者 / buffer 大小 / 平均 loss。
-    """
     config = config or ConnectXConfig()
     agent = DQNAgent(config=config, channels=channels, gamma=gamma, learning_rate=learning_rate, device=device)
     replay = DQNReplayBuffer(capacity=replay_capacity)
@@ -214,7 +195,6 @@ def train_dqn_selfplay(
     steps = 0
 
     for episode in range(episodes):
-        # epsilon 线性退火 (linear decay)
         epsilon = epsilon_end + (epsilon_start - epsilon_end) * max(0.0, 1.0 - episode / max(episodes - 1, 1))
         board = [0] * (config.rows * config.columns)
         mark = 1
@@ -225,17 +205,16 @@ def train_dqn_selfplay(
             state = encode_board(board, mark, config.rows, config.columns)
             mask = valid_action_mask(board, config.rows, config.columns).astype(bool)
             action = agent.act(board, mark, epsilon=epsilon, tactical_safety=False)
+            before = list(board)
             after = next_board(board, action, mark, config.rows, config.columns)
+            reward = compute_step_reward(before, after, mark, config, reward_shaping)
             done = False
-            reward = 0.0
             if check_winner(after, mark, config.rows, config.columns, config.inarow):
                 done = True
                 winner = mark
-                reward = 1.0
             elif is_draw(after, config.rows, config.columns):
                 done = True
                 winner = 0
-                reward = 0.0
 
             next_mark = opponent_mark(mark)
             next_state = encode_board(after, next_mark, config.rows, config.columns)

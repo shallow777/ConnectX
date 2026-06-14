@@ -92,10 +92,29 @@ def _tactical(board, mark, rows, columns, inarow):
         if _winner(_drop(board, action, mark, rows, columns), mark, rows, columns, inarow):
             return action
     other = _opp(mark)
-    for action in legal:
-        if _winner(_drop(board, action, other, rows, columns), other, rows, columns, inarow):
-            return action
-    return None
+    threats = [
+        action
+        for action in legal
+        if _winner(_drop(board, action, other, rows, columns), other, rows, columns, inarow)
+    ]
+    if not threats:
+        return None
+    if len(threats) == 1:
+        return threats[0]
+    best = threats[0]
+    best_remaining = len(threats)
+    for action in threats:
+        after = _drop(board, action, mark, rows, columns)
+        after_legal = [a for a, valid in enumerate(_mask(after, rows, columns)) if valid]
+        remaining = sum(
+            1
+            for candidate in after_legal
+            if _winner(_drop(after, candidate, other, rows, columns), other, rows, columns, inarow)
+        )
+        if remaining < best_remaining:
+            best_remaining = remaining
+            best = action
+    return best
 
 
 def _encode(board, mark, rows, columns):
@@ -241,7 +260,7 @@ def agent(observation, configuration):
     action = _tactical(board, mark, rows, columns, inarow)
     if action is not None:
         return int(action)
-    budget = max(0.05, min(0.80, cfg["timeout"] * 0.45))
+    budget = max(0.05, min(1.95, cfg["timeout"] * 0.88))
     deadline = time.time() + budget
     action = _search(board, mark, rows, columns, inarow, deadline)
     if not _mask(board, rows, columns)[action]:

@@ -4,6 +4,7 @@ dqn,6x7 connect-4,runs/dqn/dqn.pt,30,18,4,8,0.6,0.4666666666666667,negamax_win_r
 alphazero_main,6x7 connect-4,runs/alphazero/checkpoints/alphazero_final.pt,30,18,4,8,0.6,0.4666666666666667,negamax_win_rate,0.6
 alphazero_best,6x7 connect-4,runs/alphazero_overnight/checkpoints/generation_0038_champion.pt,30,27,2,1,0.9,0.8333333333333334,negamax_win_rate,0.9
 q_learning,4x5 connect-3,runs/q_learning/q_learning.pkl,30,30,0,0,1.0,1.0,negamax_win_rate,1.0
+q_learning_6x7,6x7 connect-4,runs/q_learning_6x7/q_learning.pkl,,,,,0.267,,negamax_win_rate,0.267
 ppo,6x7 connect-4,runs/ppo/checkpoints/ppo_900000.zip,,,,,,,peak_negamax_win_rate,0.95
 alphazero_main,6x7 connect-4,runs/alphazero/checkpoints/alphazero_final.pt,,,,,,,peak_negamax_win_rate,0.75
 alphazero_overnight,6x7 connect-4,runs/alphazero_overnight/checkpoints/generation_0038_champion.pt,,,,,,,peak_negamax_win_rate,0.9333333333333332
